@@ -2,6 +2,10 @@
 
 Bem-vindo ao projeto da Calculadora de Potência Elétrica! Este projeto é uma aplicação web simples construída usando o framework Next.js e Tailwind CSS para calcular a potência elétrica com base nos valores de tensão e corrente inseridos pelo usuário.
 
+## Deploy
+
+O projeto está disponível online através do Vercel. Você pode acessá-lo [aqui](https://calculadora-potencia-eletrica.vercel.app/).
+
 ## Funcionalidades
 
 - Calcula a potência elétrica a partir dos valores de tensão e corrente fornecidos.
