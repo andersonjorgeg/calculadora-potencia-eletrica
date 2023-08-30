@@ -5,12 +5,13 @@ interface ButtonProps {
   onClick: () => void;
   bgColor: string;
   hoverBgColor: string;
+  colSpan: string;
 }
 
-const Button: React.FC<ButtonProps> = ({ text, onClick, bgColor, hoverBgColor }) => {
+const Button: React.FC<ButtonProps> = ({ text, onClick, bgColor, hoverBgColor, colSpan }) => {
   return (
     <button
-      className={`rounded-md py-2 transition duration-500 hover:text-slate-50 text-white col-span-6 ${bgColor} ${hoverBgColor}`}
+      className={`rounded-md py-2 transition duration-500 hover:text-slate-50 text-white ${colSpan} ${bgColor} ${hoverBgColor}`}
       onClick={onClick}
     >
       {text}
