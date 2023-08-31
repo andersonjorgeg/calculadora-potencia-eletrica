@@ -6,12 +6,15 @@ import Button from './Button';
 import {
   saoValoresValidos,
   calcularPotenciaTotal,
+  calcularTensaoTotal,
+  calcularCorrenteTotal,
   formatarPotencia,
 } from '../util/utilidades';
 
 function Calculadora(): JSX.Element {
   const [tensao, setTensao] = useState<string>('');
   const [corrente, setCorrente] = useState<string>('');
+  const [potencia, setPotencia] = useState<string>('');
   const [resultado, setResultado] = useState<string>('');
   const [calculoSelecionado, setCalculoSelecionado] = useState<string>('potencia')
 
@@ -22,8 +25,46 @@ function Calculadora(): JSX.Element {
     if (saoValoresValidos(tensaoNumero, correnteNumero)) {
       const potencia = calcularPotenciaTotal(tensaoNumero, correnteNumero);
       const potenciaFormatada = formatarPotencia(potencia);
-      exibirResultado(`A potência é: ${potenciaFormatada} Wats`);
+      exibirResultado(`A potência é ${potenciaFormatada} Wats`);
       limparCampos();
+    } else if (camposVazios()) {
+      exibirResultado('Digite os valores');
+    } else {
+      exibirResultado('Valores inválidos');
+    }
+  };
+
+  const calcularTensao = (): void => {
+    const potenciaNumero = parseFloat(potencia);
+    const correnteNumero = parseFloat(corrente);
+
+    if (saoValoresValidos(potenciaNumero, correnteNumero)) {
+      if (correnteNumero !== 0) {
+        const tensao = calcularTensaoTotal(potenciaNumero, correnteNumero);
+        exibirResultado(`A tensão é ${tensao.toFixed(0)} Volts`);
+        limparCampos();
+      } else {
+        exibirResultado('Operação inválida: divisão por zero. Nesse calculo a corrente tem que ser diferente de zero.');
+      }
+    } else if (camposVazios()) {
+      exibirResultado('Digite os valores');
+    } else {
+      exibirResultado('Valores inválidos');
+    }
+  };
+
+  const calcularCorrente = (): void => {
+    const potenciaNumero = parseFloat(potencia);
+    const tensaoNumero = parseFloat(corrente);
+
+    if (saoValoresValidos(potenciaNumero, tensaoNumero)) {
+      if (tensaoNumero !== 0) {
+        const corrente = calcularCorrenteTotal(potenciaNumero, tensaoNumero);
+        exibirResultado(`A corrente é ${corrente.toFixed(3)} Amperes`);
+        limparCampos();
+      } else {
+        exibirResultado('Operação inválida: divisão por zero. Nesse calculo a tensão tem que ser diferente de zero.');
+      }
     } else if (camposVazios()) {
       exibirResultado('Digite os valores');
     } else {
@@ -38,6 +79,7 @@ function Calculadora(): JSX.Element {
   const limparCampos = (): void => {
     setTensao('');
     setCorrente('');
+    setPotencia('');
   };
 
   const camposVazios = (): boolean => {
@@ -46,6 +88,9 @@ function Calculadora(): JSX.Element {
 
   const limparResultado = (): void => {
     setResultado('');
+    setTensao('');
+    setCorrente('');
+    setPotencia('');
   }
 
 
@@ -109,8 +154,8 @@ function Calculadora(): JSX.Element {
         <div className="space-y-2">
           <InputField
             label="Potência (P)"
-            value={tensao}
-            onChange={setTensao}
+            value={potencia}
+            onChange={setPotencia}
             type="number"
             step="0.1"
           />
@@ -124,26 +169,65 @@ function Calculadora(): JSX.Element {
         </div>
       )}
 
+      {(calculoSelecionado === 'corrente') && (
+        <div className="space-y-2">
+          <InputField
+            label="Potência (P)"
+            value={potencia}
+            onChange={setPotencia}
+            type="number"
+            step="0.1"
+          />
+          <InputField
+            label="Tensão (V)"
+            value={tensao}
+            onChange={setTensao}
+            type="number"
+            step="0.1"
+          />
+        </div>
+      )}
 
       <div className="grid grid-cols-12 gap-2">
-        <Button
-          colSpan='col-span-6'
-          bgColor='bg-cor1'
-          hoverBgColor='hover:bg-cor6'
-          text='Calcular'
-          onClick={calcularPotencia}
+        {(calculoSelecionado === 'potencia') && (
+          <Button
+            colSpan='col-span-6'
+            bgColor='bg-cor1'
+            hoverBgColor='hover:bg-cor6'
+            text='Calcular'
+            onClick={calcularPotencia}
+          />
+        )}
+        {(calculoSelecionado === 'tensao') && (
+          <Button
+            colSpan='col-span-6'
+            bgColor='bg-cor1'
+            hoverBgColor='hover:bg-cor6'
+            text='Calcular'
+            onClick={calcularTensao}
+          />
+        )}
+        {(calculoSelecionado === 'corrente') && (
+          <Button
+            colSpan='col-span-6'
+            bgColor='bg-cor1'
+            hoverBgColor='hover:bg-cor6'
+            text='Calcular'
+            onClick={calcularCorrente}
+          />
+        )}
 
-        />
         <Button
           colSpan='col-span-6'
           bgColor='bg-cor1'
           hoverBgColor='hover:bg-red-500'
           text='Limpar Resultado'
           onClick={limparResultado}
-
         />
       </div>
-      <p className='text-center'>{resultado}</p>
+      <div className="grid max-w-xs">
+        <p className='text-center'>{resultado}</p>
+      </div>
     </div>
   );
 }
