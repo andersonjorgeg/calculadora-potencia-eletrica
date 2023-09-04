@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import InputField from './InputField';
 import Button from './Button';
+import RadioButton from './RadioButton';
+import GroupInput from './groupInput';
 import {
   saoValoresValidos,
   calcularPotenciaTotal,
@@ -10,67 +11,14 @@ import {
   calcularCorrenteTotal,
   formatarPotencia,
 } from '../util/utilidades';
+import { calcularEExibirResultado } from '@/util/calculos';
 
 function Calculadora(): JSX.Element {
   const [tensao, setTensao] = useState<string>('');
   const [corrente, setCorrente] = useState<string>('');
   const [potencia, setPotencia] = useState<string>('');
   const [resultado, setResultado] = useState<string>('');
-  const [calculoSelecionado, setCalculoSelecionado] = useState<string>('potencia')
-
-  const calcularPotencia = (): void => {
-    const tensaoNumero = parseFloat(tensao);
-    const correnteNumero = parseFloat(corrente);
-
-    if (saoValoresValidos(tensaoNumero, correnteNumero)) {
-      const potencia = calcularPotenciaTotal(tensaoNumero, correnteNumero);
-      const potenciaFormatada = formatarPotencia(potencia);
-      exibirResultado(`A potência é ${potenciaFormatada} Wats`);
-      limparCampos();
-    } else if (camposVazios()) {
-      exibirResultado('Digite os valores');
-    } else {
-      exibirResultado('Valores inválidos');
-    }
-  };
-
-  const calcularTensao = (): void => {
-    const potenciaNumero = parseFloat(potencia);
-    const correnteNumero = parseFloat(corrente);
-
-    if (saoValoresValidos(potenciaNumero, correnteNumero)) {
-      if (correnteNumero !== 0) {
-        const tensao = calcularTensaoTotal(potenciaNumero, correnteNumero);
-        exibirResultado(`A tensão é ${tensao.toFixed(0)} Volts`);
-        limparCampos();
-      } else {
-        exibirResultado('Operação inválida: divisão por zero. Nesse calculo a corrente tem que ser diferente de zero.');
-      }
-    } else if (camposVazios()) {
-      exibirResultado('Digite os valores');
-    } else {
-      exibirResultado('Valores inválidos');
-    }
-  };
-
-  const calcularCorrente = (): void => {
-    const potenciaNumero = parseFloat(potencia);
-    const tensaoNumero = parseFloat(corrente);
-
-    if (saoValoresValidos(potenciaNumero, tensaoNumero)) {
-      if (tensaoNumero !== 0) {
-        const corrente = calcularCorrenteTotal(potenciaNumero, tensaoNumero);
-        exibirResultado(`A corrente é ${corrente.toFixed(3)} Amperes`);
-        limparCampos();
-      } else {
-        exibirResultado('Operação inválida: divisão por zero. Nesse calculo a tensão tem que ser diferente de zero.');
-      }
-    } else if (camposVazios()) {
-      exibirResultado('Digite os valores');
-    } else {
-      exibirResultado('Valores inválidos');
-    }
-  };
+  const [calculoSelecionado, setCalculoSelecionado] = useState<string>('potencia');
 
   const exibirResultado = (mensagem: string): void => {
     setResultado(mensagem);
@@ -84,6 +32,53 @@ function Calculadora(): JSX.Element {
 
   const camposVazios = (): boolean => {
     return corrente === '' && tensao === '';
+  };
+
+  const calcularPotencia = (): void => {
+    const tensaoNumero = parseFloat(tensao);
+    const correnteNumero = parseFloat(corrente);
+
+    const mensagem = calcularEExibirResultado(
+      tensaoNumero,
+      correnteNumero,
+      calcularPotenciaTotal,
+      (potencia) => `A potência é ${formatarPotencia(potencia)} Wats`,
+      'corrente'
+    );
+
+    exibirResultado(mensagem);
+    limparCampos();
+  };
+
+  const calcularTensao = (): void => {
+    const potenciaNumero = parseFloat(potencia);
+    const correnteNumero = parseFloat(corrente);
+
+    const mensagem = calcularEExibirResultado(
+      potenciaNumero,
+      correnteNumero,
+      calcularTensaoTotal,
+      (tensao) => `A tensão é ${tensao.toFixed(0)} Volts`,
+      'corrente'
+    );
+
+    exibirResultado(mensagem);
+    limparCampos();
+  };
+
+  const calcularCorrente = (): void => {
+    const potenciaNumero = parseFloat(potencia);
+    const tensaoNumero = parseFloat(tensao);
+
+    const mensagem = calcularEExibirResultado(
+      potenciaNumero,
+      tensaoNumero,
+      calcularCorrenteTotal,
+      (corrente) => `A corrente é ${corrente.toFixed(3).replace('.', ',')} Amperes`,
+      'tensão'
+    );
+    exibirResultado(mensagem);
+    limparCampos();
   };
 
   const limparResultado = (): void => {
@@ -100,92 +95,56 @@ function Calculadora(): JSX.Element {
         Calculadora Elétrica
       </h1>
       <div className="grid grid-cols-12 gap-2">
-        <label className='col-span-4'>
-          <input
-            className='cursor-pointer'
-            type="radio"
-            value="potencia"
-            checked={calculoSelecionado === 'potencia'}
-            onChange={() => setCalculoSelecionado('potencia')}
-          />
-          P = V * I
-        </label>
-        <label className='col-span-4'>
-          <input
-            className='cursor-pointer'
-            type="radio"
-            value="tensao"
-            checked={calculoSelecionado === 'tensao'}
-            onChange={() => setCalculoSelecionado('tensao')}
-          />
-          V = P / I
-        </label>
-        <label className='col-span-4'>
-          <input
-            className='cursor-pointer'
-            type="radio"
-            value="corrente"
-            checked={calculoSelecionado === 'corrente'}
-            onChange={() => setCalculoSelecionado('corrente')}
-          />
-          I = P / V
-        </label>
+        <RadioButton
+          label='P = V * I'
+          value='potencia'
+          checked={calculoSelecionado === 'potencia'}
+          onChange={() => setCalculoSelecionado('potencia')}
+        />
+        <RadioButton
+          label='V = P / I'
+          value='tensao'
+          checked={calculoSelecionado === 'tensao'}
+          onChange={() => setCalculoSelecionado('tensao')}
+        />
+        <RadioButton
+          label='I = P / V'
+          value='corrente'
+          checked={calculoSelecionado === 'corrente'}
+          onChange={() => setCalculoSelecionado('corrente')}
+        />
       </div>
       {(calculoSelecionado === 'potencia') && (
-        <div className="space-y-2">
-          <InputField
-            label="Tensão (V)"
-            value={tensao}
-            onChange={setTensao}
-            type="number"
-            step="0.1"
-          />
-          <InputField
-            label="Corrente (A)"
-            value={corrente}
-            onChange={setCorrente}
-            type="number"
-            step="0.1"
-          />
-        </div>
+        <GroupInput
+          label1="Tensão (V)"
+          value1={tensao}
+          onChange1={setTensao}
+          label2="Corrente (A)"
+          value2={corrente}
+          onChange2={setCorrente}
+        />
       )}
 
       {(calculoSelecionado === 'tensao') && (
-        <div className="space-y-2">
-          <InputField
-            label="Potência (P)"
-            value={potencia}
-            onChange={setPotencia}
-            type="number"
-            step="0.1"
-          />
-          <InputField
-            label="Corrente (A)"
-            value={corrente}
-            onChange={setCorrente}
-            type="number"
-            step="0.1"
-          />
-        </div>
+        <GroupInput
+          label1="Potência (P)"
+          value1={potencia}
+          onChange1={setPotencia}
+          label2="Corrente (A)"
+          value2={corrente}
+          onChange2={setCorrente}
+        />
       )}
 
       {(calculoSelecionado === 'corrente') && (
-        <div className="space-y-2">
-          <InputField
-            label="Potência (P)"
-            value={potencia}
-            onChange={setPotencia}
-            type="number"
-            step="0.1"
-          />
-          <InputField
-            label="Tensão (V)"
-            value={tensao}
-            onChange={setTensao}
-            type="number"
-            step="0.1"
-          />
-        </div>
+        <GroupInput
+          label1="Potência (P)"
+          value1={potencia}
+          onChange1={setPotencia}
+          label2="Tensão (V)"
+          value2={tensao}
+          onChange2={setTensao}
+        />
       )}
 
       <div className="grid grid-cols-12 gap-2">
